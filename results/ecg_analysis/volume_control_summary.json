@@ -1,0 +1,15 @@
+{
+  "suite": "volume_control",
+  "boot": 2000,
+  "n_records": 21799,
+  "n_patients": 18869,
+  "positives": 4898,
+  "positives_65": 2896,
+  "positives_75": 1583,
+  "arms": [
+    "availability",
+    "recruit_random",
+    "repr_aware"
+  ],
+  "bootstrap_seed": 20261107
+}

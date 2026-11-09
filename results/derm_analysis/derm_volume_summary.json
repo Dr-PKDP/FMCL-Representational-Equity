@@ -1,0 +1,15 @@
+{
+  "suite": "derm_volume",
+  "boot": 2000,
+  "n_records": 2298,
+  "n_patients": 1373,
+  "positives": 1089,
+  "positives_65": 528,
+  "positives_75": 262,
+  "arms": [
+    "availability",
+    "recruit_random",
+    "repr_aware"
+  ],
+  "bootstrap_seed": 20261107
+}

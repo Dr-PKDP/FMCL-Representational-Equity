@@ -1,0 +1,16 @@
+{
+  "cohort": "code15",
+  "rows_used": 343809,
+  "units_of_resampling": 233030,
+  "resampling": "patient",
+  "positives": 20113,
+  "n_overall": 343809,
+  "n_age65": 118357,
+  "n_age75": 62533,
+  "n_age65_fulllen": 44461,
+  "pos_overall": 20113,
+  "pos_age65": 13593,
+  "pos_age75": 8543,
+  "pos_age65_fulllen": 4993,
+  "boot": 1000
+}

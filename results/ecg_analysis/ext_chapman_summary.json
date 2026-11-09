@@ -1,0 +1,18 @@
+{
+  "cohort": "chapman",
+  "rows_used": 45150,
+  "units_of_resampling": 45150,
+  "resampling": "record",
+  "positives": 1957,
+  "n_overall": 45150,
+  "n_age65": 19338,
+  "n_age75": 9527,
+  "n_age65_Shaoxing": 4482,
+  "n_age65_Ningbo": 14856,
+  "pos_overall": 1957,
+  "pos_age65": 1398,
+  "pos_age75": 873,
+  "pos_age65_Shaoxing": 608,
+  "pos_age65_Ningbo": 790,
+  "boot": 1000
+}

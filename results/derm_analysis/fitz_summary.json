@@ -1,0 +1,13 @@
+{
+  "n_used": 3887,
+  "n_all": 3887,
+  "n_I-II": 819,
+  "n_III-IV": 2078,
+  "n_V-VI": 837,
+  "pos_all": 702,
+  "pos_I-II": 227,
+  "pos_III-IV": 354,
+  "pos_V-VI": 93,
+  "resampling": "image",
+  "boot": 1000
+}

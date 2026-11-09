@@ -1,0 +1,16 @@
+{
+  "suite": "sens_stream",
+  "boot": 2000,
+  "n_records": 21799,
+  "n_patients": 18869,
+  "positives": 4898,
+  "positives_65": 2896,
+  "positives_75": 1583,
+  "arms": [
+    "availability",
+    "post_hoc",
+    "repr_aware",
+    "size_matched"
+  ],
+  "bootstrap_seed": 20261107
+}

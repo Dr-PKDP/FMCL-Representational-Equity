@@ -1,0 +1,72 @@
+{
+ "by_age_band": {
+  "phone": {
+   "under 65": {
+    "pct": 97.6,
+    "n": 4154
+   },
+   "65 to 74": {
+    "pct": 90.1,
+    "n": 1453
+   },
+   "75 to 89": {
+    "pct": 68.5,
+    "n": 944
+   },
+   "90 and over": {
+    "pct": 41.2,
+    "n": 73
+   }
+  },
+  "watch": {
+   "under 65": {
+    "pct": 44.8,
+    "n": 4151
+   },
+   "65 to 74": {
+    "pct": 20.2,
+    "n": 1450
+   },
+   "75 to 89": {
+    "pct": 13.0,
+    "n": 946
+   },
+   "90 and over": {
+    "pct": 10.7,
+    "n": 72
+   }
+  },
+  "shared": {
+   "under 65": {
+    "pct": 19.9,
+    "n": 3584
+   },
+   "65 to 74": {
+    "pct": 28.9,
+    "n": 1195
+   },
+   "75 to 89": {
+    "pct": 35.4,
+    "n": 691
+   },
+   "90 and over": {
+    "pct": 28.5,
+    "n": 41
+   }
+  }
+ },
+ "adjusted": {
+  "phone": {
+   "n": 6240,
+   "b_age_age_sex": -0.0756,
+   "b_age_with_income_education": -0.0717,
+   "change_pct": -5.1
+  },
+  "watch": {
+   "n": 6231,
+   "b_age_age_sex": -0.0294,
+   "b_age_with_income_education": -0.0326,
+   "change_pct": 10.9
+  }
+ }
+}
