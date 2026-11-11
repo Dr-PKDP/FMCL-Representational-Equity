@@ -2,7 +2,7 @@
 eta.py: carbon-equity frontier (Eq. 5) from recruitment quantities and the paired sensitivity contrasts.
 
     python3 eta.py --analysis-dir <dir with recruit_stats.csv, frontier_contrasts.csv, volume_control_contrasts.csv>
-                   [--kappa 1.5 2 3 5 10] [--subgroup age65]
+                   [--kappa 1.5 2 3 5 10] [--subgroup age65] [--suite val_common | --suite sens_band --recruit-file recruit_stats_band.csv]
 
 Model. Training volume is matched across arms, so with a participation carbon c_p (kg CO2e for one participation by an
 ordinary device) the campaign carbon of an arm exceeds the availability arm's only through the participations of its
@@ -25,11 +25,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--analysis-dir", required=True); ap.add_argument("--subgroup", default="age65")
     ap.add_argument("--kappa", type=float, nargs="+", default=[1.5, 2, 3, 5, 10])
+    ap.add_argument("--suite", default=None, help="take the contrasts from <suite>_contrasts.csv (e.g. val_common, sens_band) "
+                    "instead of the frontier and volume-control suites; output eta_<subgroup>_<suite>.csv")
+    ap.add_argument("--recruit-file", default="recruit_stats.csv")
     a = ap.parse_args()
-    rs = pd.read_csv(os.path.join(a.analysis_dir, "recruit_stats.csv")).set_index("label")
-    fr = pd.read_csv(os.path.join(a.analysis_dir, "frontier_contrasts.csv"))
-    vc = pd.read_csv(os.path.join(a.analysis_dir, "volume_control_contrasts.csv"))
-    con = pd.concat([fr[fr.b == "availability"], vc[(vc.a == "recruit_random") & (vc.b == "availability")]], ignore_index=True)
+    rs = pd.read_csv(os.path.join(a.analysis_dir, a.recruit_file)).set_index("label")
+    if a.suite:
+        sc = pd.read_csv(os.path.join(a.analysis_dir, f"{a.suite}_contrasts.csv"))
+        con = sc[(sc.b == "availability") & (sc.a.str.startswith("repr_aware") | (sc.a == "recruit_random"))]
+    else:
+        fr = pd.read_csv(os.path.join(a.analysis_dir, "frontier_contrasts.csv"))
+        vc = pd.read_csv(os.path.join(a.analysis_dir, "volume_control_contrasts.csv"))
+        con = pd.concat([fr[fr.b == "availability"], vc[(vc.a == "recruit_random") & (vc.b == "availability")]], ignore_index=True)
     con = con[con.subgroup == a.subgroup].drop_duplicates(["a", "b", "subgroup"])
     rows = []
     for _, c in con.iterrows():
@@ -46,7 +53,7 @@ def main():
     out = pd.DataFrame(rows)
     order = ["repr_aware@0.25", "repr_aware@0.5", "repr_aware@0.75", "repr_aware", "recruit_random"]
     out["o"] = out.arm.map({k: i for i, k in enumerate(order)}); out = out.sort_values("o").drop(columns="o")
-    out.to_csv(os.path.join(a.analysis_dir, f"eta_{a.subgroup}.csv"), index=False)
+    out.to_csv(os.path.join(a.analysis_dir, f"eta_{a.subgroup}" + (f"_{a.suite}" if a.suite else "") + ".csv"), index=False)
     pd.set_option("display.width", 220, "display.max_columns", 40)
     print(out.round(2).to_string(index=False))
 

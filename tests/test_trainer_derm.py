@@ -35,4 +35,6 @@ assert xa.shape == (64, 3, 8, 8)
 with tempfile.TemporaryDirectory() as d:
     job = dict(task="derm", suite="t", arm="uniform", boost=1.0, init_seed=2, elig_seed=2, fold=4, cfg=cfg)
     assert T.run_and_save(co, job, d, dict(tc)) is not None or True
+dw = T.run_job(co, dict(task="derm", suite="t", arm="availability", boost=1.0, init_seed=1, elig_seed=1, fold=3, cfg=dict(cfg, base_ch=48)), tc)[1]
+assert dw["n_params"] == 1206193 and np.isfinite(dw["best_val_loss"]), dw["n_params"]                     # capacity variant
 print("test_trainer_derm.py OK")

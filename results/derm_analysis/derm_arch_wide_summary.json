@@ -1,0 +1,17 @@
+{
+  "suite": "derm_arch_wide",
+  "boot": 2000,
+  "n_records": 2298,
+  "n_patients": 1373,
+  "positives": 1089,
+  "positives_65": 528,
+  "positives_75": 262,
+  "arms": [
+    "availability",
+    "post_hoc",
+    "repr_aware",
+    "size_matched",
+    "uniform"
+  ],
+  "bootstrap_seed": 20261107
+}

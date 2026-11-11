@@ -10,6 +10,11 @@ Suites (declared in protocol/taskB_protocol.md):
     derm_volume     recruit_random (volume control), same seeds and folds
     derm_sens_*     10 seeds x 10 folds, arms size_matched / availability / repr_aware / post_hoc:
                       none (ownership only), consent, shallow, steep (age-coefficient bounds), stream (repair target = stream)
+    derm_val_common arms size_matched / availability / repr_aware / post_hoc, 20 seeds x 10 folds, checkpoint selected on the
+                    complete validation fold with unit loss weights (uniform is shared with derm_primary); also
+                    recruit_random and repr_aware at boost 0.25 / 0.5 / 0.75
+    derm_arch_wide  5 arms x 10 seeds x 10 folds with CompactDermNet at twice the channel width (base_ch 48)
+    derm_sens_band  categorical age bands instead of linear age
 A job is complete when its .json exists; workers skip completed jobs.
 """
 import argparse, itertools, os, sys, time, traceback
@@ -20,7 +25,9 @@ ARMS5 = ["uniform", "size_matched", "availability", "repr_aware", "post_hoc"]
 ARMS4 = ["size_matched", "availability", "repr_aware", "post_hoc"]
 FOLDS = list(range(1, 11))
 SENS = {"none": dict(engage="none"), "consent": dict(engage="consent"), "shallow": dict(age_bound="shallow"),
-        "steep": dict(age_bound="steep"), "stream": dict(repair_target="stream")}
+        "steep": dict(age_bound="steep"), "stream": dict(repair_target="stream"), "band": dict(age_bound="band")}
+VC_EXTRA = [("recruit_random", 1.0), ("repr_aware", 0.25), ("repr_aware", 0.5), ("repr_aware", 0.75)]
+WIDE = 48
 
 
 def _job(suite, arm, cfg, init_seed, elig_seed, fold, boost=1.0):
@@ -35,6 +42,11 @@ def jobs_for(suite):
         for s, f, b in itertools.product(range(20), FOLDS, (0.25, 0.5, 0.75)): out.append(_job(suite, "repr_aware", PRIMARY_CFG, s, s, f, boost=b))
     elif suite == "derm_volume":
         for s, f in itertools.product(range(20), FOLDS): out.append(_job(suite, "recruit_random", PRIMARY_CFG, s, s, f))
+    elif suite == "derm_val_common":
+        for s, f, a in itertools.product(range(20), FOLDS, ARMS4): out.append(_job(suite, a, dict(PRIMARY_CFG, val_common=True), s, s, f))
+        for s, f, (a, b) in itertools.product(range(20), FOLDS, VC_EXTRA): out.append(_job(suite, a, dict(PRIMARY_CFG, val_common=True), s, s, f, boost=b))
+    elif suite == "derm_arch_wide":
+        for s, f, a in itertools.product(range(10), FOLDS, ARMS5): out.append(_job(suite, a, dict(PRIMARY_CFG, base_ch=WIDE), s, s, f))
     elif suite.startswith("derm_sens_"):
         cfg = dict(PRIMARY_CFG, **SENS[suite[len("derm_sens_"):]])
         for s, f, a in itertools.product(range(10), FOLDS, ARMS4): out.append(_job(suite, a, cfg, s, s, f))
@@ -43,7 +55,7 @@ def jobs_for(suite):
     return out
 
 
-SUITES = ["derm_primary", "derm_frontier", "derm_volume"] + [f"derm_sens_{k}" for k in SENS]
+SUITES = ["derm_primary", "derm_frontier", "derm_volume", "derm_val_common", "derm_arch_wide"] + [f"derm_sens_{k}" for k in SENS]
 
 
 def main():

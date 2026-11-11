@@ -1,0 +1,21 @@
+{
+  "suite": "derm_val_common",
+  "boot": 2000,
+  "n_records": 2298,
+  "n_patients": 1373,
+  "positives": 1089,
+  "positives_65": 528,
+  "positives_75": 262,
+  "arms": [
+    "availability",
+    "post_hoc",
+    "recruit_random",
+    "repr_aware",
+    "repr_aware@0.25",
+    "repr_aware@0.5",
+    "repr_aware@0.75",
+    "size_matched",
+    "uniform"
+  ],
+  "bootstrap_seed": 20261107
+}

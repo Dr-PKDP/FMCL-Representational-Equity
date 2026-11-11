@@ -1,0 +1,23 @@
+{
+  "suite": "frontier",
+  "boot": 2000,
+  "n_records": 8730,
+  "n_patients": 7598,
+  "positives": 1961,
+  "positives_65": 1221,
+  "positives_75": 696,
+  "arms": [
+    "availability",
+    "repr_aware",
+    "repr_aware@0.25",
+    "repr_aware@0.5",
+    "repr_aware@0.75"
+  ],
+  "bootstrap_seed": 20261107,
+  "test_folds": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

@@ -41,10 +41,15 @@ Metrics are computed on pooled out-of-fold predictions per (arm, seed). Patient-
 | primary | 1,000 | 5 arms x 20 seeds x 10 folds |
 | frontier | 600 | repr_aware at boost 0.25, 0.5, 0.75 |
 | volume_control | 200 | recruit_random: availability pool plus as many random recruits as repr_aware |
-| sens_none, sens_consent, sens_phone, sens_shallow, sens_steep, sens_stream | 400 each | 10 seeds x 10 folds x arms size_matched, availability, repr_aware, post_hoc (uniform shared with primary) |
+| val_common | 1,600 | 20 seeds x 10 folds x arms size_matched, availability, repr_aware, post_hoc, recruit_random and repr_aware at boost 0.25, 0.5, 0.75, with checkpoint selection on the complete validation fold (unit loss weights); uniform shared with primary |
+| arch_wide | 500 | 5 arms x 10 seeds x 10 folds with CompactECGNet at twice the channel width (base_ch 64, 643,969 parameters) |
+| band_vc | 800 | categorical-age participation model with checkpoint selection on the complete validation fold: arms size_matched, availability, repr_aware, post_hoc, recruit_random and repr_aware at boost 0.25, 0.5, 0.75; 10 seeds x 10 folds (uniform shared with primary) |
+| sens_none, sens_consent, sens_phone, sens_shallow, sens_steep, sens_stream, sens_band | 400 each | 10 seeds x 10 folds x arms size_matched, availability, repr_aware, post_hoc (uniform shared with primary) |
 | varcomp | 96 | 4 x 4 initialisation x eligibility seeds, folds 2, 5, 9, arms availability and repr_aware |
 
-`sens_none` and `sens_consent` vary the engagement reading; `sens_phone` uses smartphone eligibility; `sens_shallow` and `sens_steep` use the age coefficient at the confidence limit nearest to and furthest from zero; `sens_stream` changes the repair target. All suites are reported.
+`sens_none` and `sens_consent` vary the engagement reading; `sens_phone` uses smartphone eligibility; `sens_shallow` and `sens_steep` use the age coefficient at the confidence limit nearest to and furthest from zero; `sens_stream` changes the repair target. All suites are reported. `sens_band` replaces linear age by six age bands (18-34, 35-49, 50-64, 65-74, 75-84, 85-90) in the ownership and engagement models (`BAND_MODELS` in `participation/propensity.py`); its uniform arm is shared with primary because the uniform pool does not depend on the participation model.
+
+The suite `arch_wide` repeats the five primary arms with a wider network to test whether the participation contrasts depend on model capacity. `analysis/seed_patient_bootstrap.py` adds intervals that resample training seeds together with patients (the same patient resamples as the main analysis) for the main suites, and a joint interval of remediation efficiency that includes the seed-to-seed variation of R_a; the coefficient uncertainty of the HINTS models is not resampled.
 
 ## 6. Carbon accounting
 
@@ -76,8 +81,18 @@ The largest difference between settings is 0.0044. Selected: learning rate 3e-3,
 
 The suite `volume_control` (arm recruit_random: the availability pool plus as many randomly chosen recruits as the repair arm) separates the effect of added training volume from the effect of age targeting.
 
+The suite `val_common` repeats the primary suite with one change: the validation fold used for checkpoint selection and early stopping is not filtered by the arm's eligibility rule, so every arm selects its checkpoint on the same patients. Contrasts against the primary suite show how much of the arm-specific effects is carried by checkpoint selection on an arm-specific validation set.
+
 ## 10. Analysis conventions
 
 Decision-curve thresholds in the analysis are 0.02 to 0.30 (Task A) and 0.10 to 0.70 (Task B). The Benjamini-Hochberg family consists of the 11 sensitivity contrasts of the primary suite (size_matched vs uniform, availability vs size_matched, repr_aware vs availability and post_hoc vs availability at 65+ and 75+; availability vs uniform at 75+; repr_aware vs uniform at 65+ and 75+); area under the curve and calibration are reported without adjustment, and supplementary suites are adjusted within the contrasts they contain. Intervals are the 2.5th and 97.5th percentiles of the seed-averaged metric over patient resamples shared by all arms and seeds; the across-seed standard deviation is reported separately.
 
 Age-disparity quantities are reported outside the multiplicity family (`agegap/<suite>_arms.csv`, `agegap/<suite>_contrasts.csv`): sensitivity at 95% specificity below 65 years, the age gap (65+ minus under 65, each with its subgroup threshold), their contrasts between arms with the shared patient bootstrap and the sign-flip test, and the direct contrast of full repair against the 0.75 boost level in the frontier suite.
+
+## 11. Hyperparameter selection restricted to folds 1 to 6, categorical age with common validation, one-threshold analysis
+
+Hyperparameter selection restricted to folds 1 to 6. The grids of section 8 used test folds 1, 5, 9 with validation folds 2, 6, 10, so every record of the development cohort took part in some tuning job. `experiments/tune_independent.py` repeats the selection on folds 1 to 6 only (the cohort is restricted to those folds; tuning jobs use test folds 1, 3, 5, validation folds 2, 4, 6 and the remaining folds for training; uniform arm, validation loss, seeds 900 to 902), with a grid extended by one step on each side of the selected values (ECG: learning rate {3e-4, 1e-3, 3e-3, 1e-2} x epoch-equivalents {10, 20, 40, 80}; dermatology: {1e-3, 3e-3, 1e-2} x {10, 20, 40, 80}). Folds 7 to 10 are not read. `ecg_analysis.py --folds 7 8 9 10` evaluates the main suites on the test folds 7 to 10 only, so those estimates do not depend on records used for selection. If the selection on folds 1 to 6 differs from the values in `DEFAULT_TRAIN` / `DEFAULT_TRAIN_DERM`, `experiments/indep_confirm.py` retrains the arms uniform, size_matched, availability, repr_aware and recruit_random (20 seeds, test folds 7 to 10, 400 jobs per task) with the selected values (suites `indep_conf`, `derm_indep_conf`).
+
+Categorical age with common validation. The suite `band_vc` combines the participation model of `sens_band` with the validation rule of `val_common`. Recruitment statistics for the categorical-age model (all five repair labels) come from `carbon/recruit_stats.py --age-bound band`, and `carbon/eta.py --suite band_vc --recruit-file recruit_stats_band.csv` gives the remediation efficiency.
+
+One-threshold analysis. The age gap of section 1 is the difference of sensitivities at subgroup-specific 95% specificity. `analysis/common_threshold.py` adds a deployment-oriented estimand: one threshold per model, the score at which specificity over all test patients is 95%; sensitivity and specificity are then read within patients aged 65 and over and under 65, and the gap is their difference. The threshold is re-estimated on every patient resample; contrasts use the pairs and resamples of the main analysis (`commonthr/<suite>_arms.csv`, `_contrasts.csv`).

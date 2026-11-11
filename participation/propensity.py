@@ -26,14 +26,28 @@ MODELS = {
 }
 AGE_CAP = 90
 
+# Functional-form sensitivity (age_bound="band"): six age bands instead of linear age, same sex term, fitted by
+# fit_hints.py.  name: (log-odds of the bands 18-34, 35-49, 50-64, 65-74, 75-84, 85-90 for a man, female coef).
+# Ages below 18 take the first band; ages are capped at 90.
+BAND_EDGES = (35, 50, 65, 75, 85)
+BAND_MODELS = {
+    "phone":  ((3.8173, 4.1441, 3.2872, 2.1347, 0.8542, -0.0842), 0.1592),
+    "watch":  ((-0.1064, -0.2693, -0.6376, -1.4992, -1.9478, -2.3689), 0.2580),
+    "shared": ((-1.6142, -1.3596, -1.2592, -0.9246, -0.6210, -0.6251), 0.0200),
+}
+
 
 def _sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
 
 
 def prob(model, age, female, age_bound=None):
-    """P(outcome | age, sex). age_bound: 'low' / 'high' replaces the age coefficient by the
-    CI endpoint nearest to / furthest from zero (the shallow / steep sensitivity bounds)."""
+    """P(outcome | age, sex). age_bound: 'shallow' / 'steep' replaces the age coefficient by the CI endpoint nearest
+    to / furthest from zero; 'band' uses the categorical-age model BAND_MODELS."""
+    if age_bound == "band":
+        lo, b_f = BAND_MODELS[model]
+        a = np.minimum(np.asarray(age, dtype=float), AGE_CAP)
+        return _sigmoid(np.asarray(lo)[np.digitize(a, BAND_EDGES)] + b_f * np.asarray(female, dtype=float))
     b0, b_age, b_f, ci = MODELS[model]
     if age_bound == "shallow":
         b_age = min(ci, key=abs)

@@ -32,9 +32,11 @@ Selected: learning rate 3e-3, 40 epoch-equivalents (`DEFAULT_TRAIN_DERM` in `mod
 | derm_primary | 1,000 | 5 arms x 20 seeds x 10 folds |
 | derm_frontier | 600 | repr_aware at boost 0.25, 0.5, 0.75 |
 | derm_volume | 200 | recruit_random |
-| derm_sens_none, _consent, _shallow, _steep, _stream | 400 each | 10 seeds x 4 arms |
+| derm_val_common | 1,600 | 20 seeds x 10 folds x arms size_matched, availability, repr_aware, post_hoc, recruit_random and repr_aware at boost 0.25, 0.5, 0.75, checkpoint selection on the complete validation fold; uniform shared with derm_primary |
+| derm_arch_wide | 500 | 5 arms x 10 seeds x 10 folds with CompactDermNet at twice the channel width (base_ch 48, 1,206,193 parameters) |
+| derm_sens_none, _consent, _shallow, _steep, _stream, _band | 400 each | 10 seeds x 4 arms |
 
-Total 3,800.
+Total 6,300.
 
 ## 5. Analysis
 

@@ -40,8 +40,9 @@ TASKS = {"ecg": dict(meta="ptbxl_meta.csv", rid="ecg_id", label="has_cd"),
 TASK = dict(TASKS["ecg"])
 
 
-def load_suite(results, suite, canon_ecg):
-    """-> dict label -> dict seed -> prob array aligned to canon_ecg; plus diagnostics DataFrame."""
+def load_suite(results, suite, canon_ecg, folds=None):
+    """-> dict label -> dict seed -> prob array aligned to canon_ecg; plus diagnostics DataFrame.
+    folds: keep only the jobs whose test fold is in this list (canon_ecg must then hold the records of those folds only)."""
     idx = {int(e): i for i, e in enumerate(canon_ecg)}
     jobs = {}
     diags = []
@@ -49,6 +50,7 @@ def load_suite(results, suite, canon_ecg):
         d = json.load(open(jp)); npz = jp[:-5] + ".npz"
         if not os.path.exists(npz): continue
         z = np.load(npz); j = d["job"]
+        if folds is not None and j["fold"] not in folds: continue
         key = (label_of(j), j["init_seed"], j["elig_seed"])
         arr = jobs.setdefault(key, np.full(len(canon_ecg), np.nan))
         pos = np.array([idx[int(e)] for e in z[TASK["rid"]]])
@@ -102,18 +104,47 @@ def signflip_p(d, n_mc=200000, seed=0):
     return float((stat >= obs - 1e-12).mean())
 
 
-def analyse(results, cache_dir, suite, boot, out_dir, seed=20261107):
-    meta = pd.read_csv(os.path.join(cache_dir, TASK["meta"])); meta = meta[meta.loaded == 1].sort_values(TASK["rid"]).reset_index(drop=True)
-    canon = meta[TASK["rid"]].values; y = meta[TASK["label"]].values.astype(int)
-    age = meta.age_capped.values; sub = {"overall": np.ones(len(meta), bool), "age65": age >= 65, "age75": age >= 75}
-    pat = pd.factorize(meta.patient_id.values)[0]; P = pat.max() + 1
-    preds, diag = load_suite(results, suite, canon)
+def pairs_for(kind, labels):
+    """Contrasts reported for a suite."""
+    pairs = ([(PRIMARY[0], PRIMARY[1])] + SECONDARY) if kind == "primary" or "availability" in labels else []
+    if kind == "frontier":
+        pairs = [(l, "availability") for l in labels if l != "availability"]
+    if kind in ("volume_control", "volume"):
+        pairs = [("recruit_random", "availability"), ("repr_aware", "recruit_random"), ("repr_aware", "availability")]
+    if kind in ("val_common", "band_vc"):                                # plus the frontier and the random-recruitment control
+        pairs = pairs + [(l, "availability") for l in labels if l.startswith("repr_aware@")] + \
+                [("recruit_random", "availability"), ("repr_aware", "recruit_random")]
+    if kind == "indep_conf":                                             # retrained arms of the independent-tuning check
+        pairs = pairs + [("recruit_random", "availability"), ("repr_aware", "recruit_random")]
+    return pairs
+
+
+def merged_preds(results, suite, canon, folds=None):
+    """Predictions of a suite with the arms it shares with the primary suite; -> (preds, diag, kind)."""
+    preds, diag = load_suite(results, suite, canon, folds)
     if not preds: raise SystemExit(f"no results for suite {suite}")
     pre = "derm_" if suite.startswith("derm_") else ""; kind = suite[len(pre):]       # suite kind without the task prefix
     if kind in ("volume_control", "volume", "frontier"):
-        base, bdiag = load_suite(results, pre + "primary", canon)          # same seeds, folds and resampling draws as the primary suite
+        base, bdiag = load_suite(results, pre + "primary", canon, folds)          # same seeds, folds and resampling draws as the primary suite
         preds.update({k: v for k, v in base.items() if k in ("availability", "repr_aware")})
         diag = pd.concat([diag, bdiag[bdiag.label.isin(["availability", "repr_aware"])]], ignore_index=True)
+    if kind in ("val_common", "sens_band", "band_vc"):
+        # uniform validates on the complete fold in every suite, and its pool does not depend on the participation model,
+        # so it is shared with the primary suite (restricted to the suite's seeds)
+        base, bdiag = load_suite(results, pre + "primary", canon, folds)
+        seeds = set().union(*[set(v) for v in preds.values()])
+        preds["uniform"] = {k: v for k, v in base["uniform"].items() if k in seeds}
+        diag = pd.concat([diag, bdiag[(bdiag.label == "uniform") & bdiag.seed.isin([k[0] for k in seeds])]], ignore_index=True)
+    return preds, diag, kind
+
+
+def analyse(results, cache_dir, suite, boot, out_dir, seed=20261107, folds=None):
+    meta = pd.read_csv(os.path.join(cache_dir, TASK["meta"])); meta = meta[meta.loaded == 1].sort_values(TASK["rid"]).reset_index(drop=True)
+    if folds is not None: meta = meta[meta.strat_fold.isin(folds)].reset_index(drop=True)      # evaluation restricted to these test folds
+    canon = meta[TASK["rid"]].values; y = meta[TASK["label"]].values.astype(int)
+    age = meta.age_capped.values; sub = {"overall": np.ones(len(meta), bool), "age65": age >= 65, "age75": age >= 75}
+    pat = pd.factorize(meta.patient_id.values)[0]; P = pat.max() + 1
+    preds, diag, kind = merged_preds(results, suite, canon, folds)
     labels = sorted(preds)
     for lab in labels:
         for k, arr in preds[lab].items():
@@ -150,11 +181,7 @@ def analyse(results, cache_dir, suite, boot, out_dir, seed=20261107):
     arms = pd.DataFrame(rows)
 
     crows = []
-    pairs = ([(PRIMARY[0], PRIMARY[1])] + SECONDARY) if kind == "primary" or "availability" in labels else []
-    if kind == "frontier":
-        pairs = [(l, "availability") for l in labels if l != "availability"]
-    if kind in ("volume_control", "volume"):
-        pairs = [("recruit_random", "availability"), ("repr_aware", "recruit_random"), ("repr_aware", "availability")]
+    pairs = pairs_for(kind, labels)
     for a, b in pairs:
         if a not in preds or b not in preds: continue
         common = sorted(set(preds[a]) & set(preds[b]))
@@ -215,7 +242,7 @@ def analyse(results, cache_dir, suite, boot, out_dir, seed=20261107):
     pd.DataFrame(erows).to_csv(os.path.join(out_dir, "agegap", f"{suite}_arms.csv"), index=False)
     pd.DataFrame(ecrows).to_csv(os.path.join(out_dir, "agegap", f"{suite}_contrasts.csv"), index=False)
     summ = dict(suite=suite, boot=boot, n_records=int(len(meta)), n_patients=int(P), positives=int(y.sum()), positives_65=int(y[sub["age65"]].sum()),
-                positives_75=int(y[sub["age75"]].sum()), arms=labels, bootstrap_seed=seed)
+                positives_75=int(y[sub["age75"]].sum()), arms=labels, bootstrap_seed=seed, test_folds=sorted(folds) if folds else "all")
     json.dump(summ, open(os.path.join(out_dir, f"{suite}_summary.json"), "w"), indent=2)
     pd.set_option("display.width", 220, "display.max_columns", 30)
     print(arms[["arm", "n_seeds", "sens95_overall", "sens95_age65", "sens95_age65_lo", "sens95_age65_hi", "sens95_age75", "auc_overall"]].round(3).to_string(index=False))
@@ -227,6 +254,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", required=True); ap.add_argument("--cache-dir", required=True); ap.add_argument("--out-dir", required=True)
     ap.add_argument("--task", choices=list(TASKS), default="ecg"); ap.add_argument("--suites", nargs="+", default=["primary"]); ap.add_argument("--boot", type=int, default=2000)
+    ap.add_argument("--folds", type=int, nargs="+", default=None, help="restrict the evaluation to these test folds (independent-tuning check)")
     a = ap.parse_args()
     TASK.update(TASKS[a.task])
-    for s in a.suites: analyse(a.results, a.cache_dir, s, a.boot, a.out_dir)
+    for s in a.suites: analyse(a.results, a.cache_dir, s, a.boot, a.out_dir, folds=a.folds)

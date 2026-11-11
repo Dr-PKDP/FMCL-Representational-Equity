@@ -1,0 +1,34 @@
+{
+  "task": "ecg",
+  "selected": {
+    "lr": 0.01,
+    "epoch_equiv": 10.0
+  },
+  "selected_val_loss": 0.2708230635181103,
+  "main_experiments": {
+    "lr": 0.003,
+    "epoch_equiv": 20.0
+  },
+  "same_as_main": false,
+  "val_loss_at_main_values": 0.2857921164990059,
+  "grid_range": 0.0184374588694573,
+  "n_cells": 16,
+  "tuning_folds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tuning_test_folds": [
+    1,
+    3,
+    5
+  ],
+  "seeds": [
+    900,
+    901,
+    902
+  ]
+}

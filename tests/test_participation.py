@@ -16,6 +16,14 @@ assert P.prob("shared", 30, 0) < P.prob("shared", 80, 0)
 assert abs(P.prob("watch", 90, 0) - P.prob("watch", 300, 0)) < 1e-12
 # shallow bound is flatter than steep bound
 assert abs(P.prob("watch", 30, 0, "shallow") - P.prob("watch", 80, 0, "shallow")) < abs(P.prob("watch", 30, 0, "steep") - P.prob("watch", 80, 0, "steep"))
+# categorical-age variant: constant within a band, ownership falls and engagement rises across bands, age capped at 90
+assert P.prob("watch", 66, 0, "band") == P.prob("watch", 74, 0, "band") and P.prob("watch", 10, 1, "band") == P.prob("watch", 34, 1, "band")
+for dev in ("phone", "watch"):
+    assert P.prob(dev, 70, 0, "band") > P.prob(dev, 80, 0, "band") > P.prob(dev, 88, 0, "band"), dev
+assert P.prob("shared", 30, 0, "band") < P.prob("shared", 80, 0, "band")
+assert P.prob("watch", 90, 0, "band") == P.prob("watch", 300, 0, "band")
+pb = A.build_pool("repr_aware", age, fem, (5, 2, 0), dict(device="watch", engage="tilt", boost=1.0, repair_target="pool", age_bound="band"))
+assert pb["n_recruited"] > 0
 
 for mode in ("none", "tilt", "consent"):
     for dev in ("watch", "phone"):

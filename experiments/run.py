@@ -9,7 +9,14 @@ Suites (declared in protocol/analysis_plan.md):
     frontier    repr_aware at boost 0.25 / 0.5 / 0.75, same seeds and folds (boost 0 = availability, 1 = primary)
     sens_*      10 seeds x 10 folds, arms size_matched / availability / repr_aware / post_hoc (uniform is shared):
                   none (ownership only), consent, phone (smartphone eligibility), shallow, steep (age-coefficient
-                  bounds), stream (repair target = stream)
+                  bounds), stream (repair target = stream), band (categorical age bands instead of linear age)
+    val_common  arms size_matched / availability / repr_aware / post_hoc / recruit_random and repr_aware at boost 0.25 /
+                0.5 / 0.75, 20 seeds x 10 folds, checkpoint selected on the complete validation fold with unit loss weights
+                (uniform is shared with primary)
+    band_vc     categorical-age participation model with checkpoint selection on the complete validation fold: arms size_matched /
+                availability / repr_aware / post_hoc / recruit_random and repr_aware at boost 0.25 / 0.5 / 0.75, 10 seeds x 10 folds
+                (uniform is shared with primary)
+    arch_wide   5 arms x 10 seeds x 10 folds with CompactECGNet at twice the channel width (base_ch 64)
     varcomp     init seed x eligibility seed grid, folds 2, 5, 9, arms availability and repr_aware
 A job is complete when its .json exists; a worker skips completed jobs, so a killed worker is restarted by
 running the same command again.
@@ -22,7 +29,10 @@ ARMS5 = ["uniform", "size_matched", "availability", "repr_aware", "post_hoc"]
 ARMS4 = ["size_matched", "availability", "repr_aware", "post_hoc"]
 FOLDS = list(range(1, 11))
 SENS = {"none": dict(engage="none"), "consent": dict(engage="consent"), "phone": dict(device="phone"),
-        "shallow": dict(age_bound="shallow"), "steep": dict(age_bound="steep"), "stream": dict(repair_target="stream")}
+        "shallow": dict(age_bound="shallow"), "steep": dict(age_bound="steep"), "stream": dict(repair_target="stream"),
+        "band": dict(age_bound="band")}
+VC_EXTRA = [("recruit_random", 1.0), ("repr_aware", 0.25), ("repr_aware", 0.5), ("repr_aware", 0.75)]
+WIDE = 64
 
 
 def _job(suite, arm, cfg, init_seed, elig_seed, fold, boost=1.0):
@@ -44,6 +54,20 @@ def jobs_for(suite):
     elif suite == "volume_control":
         for s, f in itertools.product(range(20), FOLDS):
             out.append(_job(suite, "recruit_random", PRIMARY_CFG, s, s, f))
+    elif suite == "val_common":
+        for s, f, a in itertools.product(range(20), FOLDS, ARMS4):
+            out.append(_job(suite, a, dict(PRIMARY_CFG, val_common=True), s, s, f))
+        for s, f, (a, b) in itertools.product(range(20), FOLDS, VC_EXTRA):
+            out.append(_job(suite, a, dict(PRIMARY_CFG, val_common=True), s, s, f, boost=b))
+    elif suite == "band_vc":
+        cfg = dict(PRIMARY_CFG, age_bound="band", val_common=True)
+        for s, f, a in itertools.product(range(10), FOLDS, ARMS4):
+            out.append(_job(suite, a, cfg, s, s, f))
+        for s, f, (a, b) in itertools.product(range(10), FOLDS, VC_EXTRA):
+            out.append(_job(suite, a, cfg, s, s, f, boost=b))
+    elif suite == "arch_wide":
+        for s, f, a in itertools.product(range(10), FOLDS, ARMS5):
+            out.append(_job(suite, a, dict(PRIMARY_CFG, base_ch=WIDE), s, s, f))
     elif suite == "varcomp":
         for f, a, i, e in itertools.product((2, 5, 9), ("availability", "repr_aware"), range(4), range(4)):
             out.append(_job(suite, a, PRIMARY_CFG, 100 + i, 100 + e, f))
@@ -52,7 +76,7 @@ def jobs_for(suite):
     return out
 
 
-SUITES = ["primary", "frontier", "volume_control"] + [f"sens_{k}" for k in SENS] + ["varcomp"]
+SUITES = ["primary", "frontier", "volume_control", "val_common", "band_vc", "arch_wide"] + [f"sens_{k}" for k in SENS] + ["varcomp"]
 
 
 def main():

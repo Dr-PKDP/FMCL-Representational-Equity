@@ -119,13 +119,15 @@ def run_job(cohort, job, train_cfg=None, model_fn=CompactECGNet, verbose=False, 
 
     cfg = dict(job["cfg"], boost=job.get("boost", 1.0))
     pool = A.build_pool(job["arm"], tr.age, tr.female, (job["elig_seed"], test_f, 0), cfg)
-    vpool = A.build_pool(job["arm"], va.age, va.female, (job["elig_seed"], test_f, 1), cfg)
+    # cfg["val_common"]: every arm is validated on the complete validation fold with unit loss weights (the uniform arm's
+    # validation set); otherwise the validation fold is filtered by the arm's own eligibility rule.
+    vpool = A.build_pool("uniform" if cfg.get("val_common") else job["arm"], va.age, va.female, (job["elig_seed"], test_f, 1), cfg)
     summary = A.pool_summary(pool, tr.age)
     n_train_rec = len(tr.rec)
 
     torch.manual_seed(job["init_seed"] * 1000003 + test_f)
     gen = torch.Generator(device=dev); gen.manual_seed(job["init_seed"] * 7919 + test_f)
-    model = model_fn().to(dev)
+    model = (model_fn(base_ch=cfg["base_ch"]) if cfg.get("base_ch") else model_fn()).to(dev)     # cfg["base_ch"]: capacity sensitivity
     opt = torch.optim.AdamW(model.parameters(), lr=tc["lr"], weight_decay=tc["weight_decay"])
 
     steps_per_round = tc["K"] // tc["batch"]

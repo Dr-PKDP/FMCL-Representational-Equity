@@ -49,3 +49,16 @@ if __name__ == "__main__":
     assert d4["n_eligible"] != d1["n_eligible"] or not (d4["n_pool_records"] == d1["n_pool_records"])   # eligibility seed changes it
     assert not np.allclose(p1.y_prob, p3.y_prob) and not np.allclose(p1.y_prob, p4.y_prob)
     print("test_trainer.py OK")
+    # Common validation: the availability arm validates on the complete fold, as the uniform arm does.
+    cfg_vc = dict(cfg, val_common=True)
+    job = dict(task="ecg", suite="t", arm="availability", boost=1.0, init_seed=0, elig_seed=0, fold=3, cfg=cfg_vc)
+    pred, diag = T.run_job(co, job, tc)
+    assert diag["n_eligible"] == res["availability"][1], "val_common must not change the training pool"
+    assert diag["best_val_loss"] != float("inf")
+    print("val_common ok")
+    # Capacity variant: base_ch doubles the channel width of CompactECGNet.
+    job = dict(task="ecg", suite="t", arm="availability", boost=1.0, init_seed=0, elig_seed=0, fold=3, cfg=dict(cfg, base_ch=64))
+    pred, diag = T.run_job(co, job, tc)
+    assert diag["n_params"] == 643969, diag["n_params"]
+    assert diag["best_val_loss"] != float("inf")
+    print("base_ch ok")

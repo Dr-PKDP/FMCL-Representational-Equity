@@ -10,6 +10,8 @@ Weighted logistic regressions (statsmodels GLM, variance weights = PERSON_FINWT0
 on age (capped at 90) and sex (BirthSex: 1 = female, 2 = male). Outcome codes 1 = yes and 2 = no; other codes and negative
 survey missing codes are dropped. Standard errors: delete-one jackknife over the 50 replicate weights PERSON_FINWT1..50,
 v = (R - 1) / R * sum_r (b_r - b)^2 with R = 50. The output is the content of MODELS in propensity.py.
+A second fit per outcome replaces linear age by six age bands (18-34, 35-49, 50-64, 65-74, 75-84, 85-90; one log-odds per
+band, no intercept) with the same sex term: the content of BAND_MODELS in propensity.py (functional-form sensitivity).
 """
 import argparse
 import json
@@ -29,6 +31,16 @@ def fit(df, y, w):
     return np.asarray(sm.GLM((d[y].values == 1).astype(float), X, family=sm.families.Binomial(), var_weights=d[w].values).fit().params)
 
 
+BAND_EDGES = [35, 50, 65, 75, 85]
+
+
+def fit_band(df, y, w):
+    d = df[(df.Age > 0) & df.BirthSex.isin([1, 2]) & df[y].isin([1, 2]) & (df[w] > 0)]
+    b = np.digitize(np.minimum(d.Age.values, 90.0), BAND_EDGES)
+    X = np.column_stack([np.eye(len(BAND_EDGES) + 1)[b], (d.BirthSex.values == 1).astype(float)])
+    return np.asarray(sm.GLM((d[y].values == 1).astype(float), X, family=sm.families.Binomial(), var_weights=d[w].values).fit().params)
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--sav", required=True); ap.add_argument("--out", default=None)
     a = ap.parse_args()
@@ -42,6 +54,8 @@ def main():
         res[name] = dict(intercept=b[0], age=b[1], female=b[2], se_age=se[1], se_female=se[2],
                          ci_age=(b[1] - 1.96 * se[1], b[1] + 1.96 * se[1]))
         print(f"{name:7s} b0 {b[0]:+.4f}  age {b[1]:+.5f} (SE {se[1]:.5f}; CI {res[name]['ci_age'][0]:+.4f}, {res[name]['ci_age'][1]:+.4f})  female {b[2]:+.4f} (SE {se[2]:.4f})")
+        bb = fit_band(df, y, "PERSON_FINWT0"); res[name]["band"] = dict(logodds=list(bb[:-1]), female=bb[-1])
+        print(f"{name:7s} band log-odds " + " ".join(f"{v:+.4f}" for v in bb[:-1]) + f"  female {bb[-1]:+.4f}")
     if a.out:
         json.dump(res, open(a.out, "w"), indent=1)
 
