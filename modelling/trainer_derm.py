@@ -9,7 +9,7 @@ fold passes through the same eligibility rule. The test fold is never filtered.
 
 Differences from Task A, all arm-independent: images instead of ECGs (CompactDermNet, 128 x 128), K = 128 and batch = 64
 (the cohort has 1,373 patients), random flips and transposition of each training image (the dihedral group, applied on the GPU),
-unknown sex enters the eligibility model as 0.5, and a missing age is replaced by the cohort median for the eligibility draw only.
+unknown sex enters the device-use and engagement models as 0.5, and a missing age is replaced by the cohort median in the eligibility probability, the engagement weight and the age strata used for recruitment.
 """
 import hashlib, json, math, os, sys, time
 import numpy as np

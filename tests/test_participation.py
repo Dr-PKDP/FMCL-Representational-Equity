@@ -8,7 +8,7 @@ rng = np.random.default_rng(0)
 N = 20000
 age = np.minimum(np.clip(rng.normal(60, 18, N), 18, 95), 90); fem = rng.integers(0, 2, N).astype(float)
 
-# propensity direction: ownership falls with age, engagement rises with age
+# propensity direction: device use falls with age, engagement rises with age
 for dev in ("phone", "watch"):
     assert P.prob(dev, 30, 0) > P.prob(dev, 80, 0), dev
 assert P.prob("shared", 30, 0) < P.prob("shared", 80, 0)
@@ -16,7 +16,7 @@ assert P.prob("shared", 30, 0) < P.prob("shared", 80, 0)
 assert abs(P.prob("watch", 90, 0) - P.prob("watch", 300, 0)) < 1e-12
 # shallow bound is flatter than steep bound
 assert abs(P.prob("watch", 30, 0, "shallow") - P.prob("watch", 80, 0, "shallow")) < abs(P.prob("watch", 30, 0, "steep") - P.prob("watch", 80, 0, "steep"))
-# categorical-age variant: constant within a band, ownership falls and engagement rises across bands, age capped at 90
+# categorical-age variant: constant within a band, device use falls and engagement rises across bands, age capped at 90
 assert P.prob("watch", 66, 0, "band") == P.prob("watch", 74, 0, "band") and P.prob("watch", 10, 1, "band") == P.prob("watch", 34, 1, "band")
 for dev in ("phone", "watch"):
     assert P.prob(dev, 70, 0, "band") > P.prob(dev, 80, 0, "band") > P.prob(dev, 88, 0, "band"), dev
@@ -65,6 +65,6 @@ try:
     A.build_pool("repr_aware", age, fem, (1, 0, 0), dict(device="watch", engage="none")); raise SystemExit("missing repair_target accepted")
 except KeyError:
     pass
-# availability pool under-represents the elderly when ownership falls with age
+# availability pool under-represents the elderly when device use falls with age
 assert A.pool_summary(A.build_pool("availability", age, fem, (1, 0, 0), cfg), age)["share65"] < pop65
 print("test_participation.py: all invariants hold")

@@ -9,7 +9,7 @@ Suites (declared in protocol/taskB_protocol.md):
     derm_frontier   repr_aware at boost 0.25 / 0.5 / 0.75, same seeds and folds
     derm_volume     recruit_random (volume control), same seeds and folds
     derm_sens_*     10 seeds x 10 folds, arms size_matched / availability / repr_aware / post_hoc:
-                      none (ownership only), consent, shallow, steep (age-coefficient bounds), stream (repair target = stream)
+                      none (device use only), consent, shallow, steep (age-coefficient bounds), stream (repair target = stream)
     derm_val_common arms size_matched / availability / repr_aware / post_hoc, 20 seeds x 10 folds, checkpoint selected on the
                     complete validation fold with unit loss weights (uniform is shared with derm_primary); also
                     recruit_random and repr_aware at boost 0.25 / 0.5 / 0.75

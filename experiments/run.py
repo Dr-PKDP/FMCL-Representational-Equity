@@ -8,7 +8,7 @@ Suites (declared in protocol/analysis_plan.md):
     primary     5 arms x 20 seeds x 10 folds   wearable eligibility, engage=tilt, repair target = pool
     frontier    repr_aware at boost 0.25 / 0.5 / 0.75, same seeds and folds (boost 0 = availability, 1 = primary)
     sens_*      10 seeds x 10 folds, arms size_matched / availability / repr_aware / post_hoc (uniform is shared):
-                  none (ownership only), consent, phone (smartphone eligibility), shallow, steep (age-coefficient
+                  none (device use only), consent, phone (smartphone eligibility), shallow, steep (age-coefficient
                   bounds), stream (repair target = stream), band (categorical age bands instead of linear age)
     val_common  arms size_matched / availability / repr_aware / post_hoc / recruit_random and repr_aware at boost 0.25 /
                 0.5 / 0.75, 20 seeds x 10 folds, checkpoint selected on the complete validation fold with unit loss weights

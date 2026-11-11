@@ -10,7 +10,7 @@ Fitzpatrick17k (3,887 verified images, 702 malignant) is a secondary check with 
 
 ## 2. Eligibility
 
-Smartphone ownership (propensity model `phone`), engagement tilt, repair target = pool, as in the primary Task A configuration except for the device. Unknown sex (804 images, 35%) enters the eligibility model as 0.5; a missing age is replaced by the cohort median for the eligibility draw only. Arms: uniform, size_matched, availability, repr_aware, post_hoc; volume control recruit_random.
+Smartphone use (propensity model `phone`), engagement tilt, repair target = pool, as in the primary Task A configuration except for the device. Unknown sex (804 images, 35%) enters the device-use and engagement models as 0.5; a missing age is replaced by the cohort median in the eligibility probability, the engagement weight and the age strata used for recruitment. Arms: uniform, size_matched, availability, repr_aware, post_hoc; volume control recruit_random.
 
 ## 3. Training
 

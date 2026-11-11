@@ -12,7 +12,7 @@ Primary estimand: difference in sensitivity at 95% specificity among patients ag
 | Item | Decision |
 |---|---|
 | Eligibility device | wearable (the device that produces the ECG) |
-| Engagement (A) | `tilt` (primary): engagement tilts per-round selection among eligible patients. `none` (ownership only) and `consent` (persistent consent) are sensitivity suites |
+| Engagement (A) | `tilt` (primary): engagement tilts per-round selection among eligible patients. `none` (device use only) and `consent` (persistent consent) are sensitivity suites |
 | Repair target (B) | `pool` (primary): the repair arm re-levels the age-stratum composition of the enrolled pool. `stream` is a sensitivity suite |
 | Strata for re-levelling | under 65, 65 to 74, 75 and over; population shares of the training set |
 | Arms | uniform, size_matched, availability, repr_aware (boost 1), post_hoc; volume control recruit_random |

@@ -11,8 +11,8 @@ Three fitted models, all  logit P = intercept + b_age * age + b_female * female 
     shared   shared data from a health device with a clinician in the past year
              (engagement among respondents who answered yes/no)
 
-Eligibility (does the patient own the device that produces the task's signal?) uses an
-ownership model. Engagement is a per-round selection tilt among eligible patients only.
+Eligibility (does the patient use the device that produces the task's signal?) uses a
+device-use model. Engagement is a per-round selection tilt among eligible patients only.
 Which device defines eligibility is a task-level choice, set in CONFIG, not here:
 ECG -> wearable, dermatology -> smartphone (the device that generates the signal).
 """

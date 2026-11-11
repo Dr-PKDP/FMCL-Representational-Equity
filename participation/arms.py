@@ -55,8 +55,8 @@ def build_pool(arm, age, female, seed_key, cfg):
     u = rng_u.random(n); v = rng_v.random(n)
 
     # cfg["engage"]: how the engagement model (willingness to share health-device data) enters
-    #   "none"    eligibility = device ownership only; uniform selection among the eligible
-    #   "tilt"    ownership eligibility; engagement tilts per-round selection among the eligible
+    #   "none"    eligibility = device use only; uniform selection among the eligible
+    #   "tilt"    device-use eligibility; engagement tilts per-round selection among the eligible
     #   "consent" engagement is a persistent consent condition: eligible iff u < P(own) * P(engage)
     mode = cfg["engage"]          # no default on purpose: the engagement reading is a pre-specification decision
     own = P.prob(cfg["device"], age, female, cfg.get("age_bound"))

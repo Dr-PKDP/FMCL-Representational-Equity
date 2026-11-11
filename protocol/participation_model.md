@@ -28,7 +28,7 @@ On the complete-case sample with valid income and education (6,240 respondents),
 
 ## Use in the experiments
 
-Eligibility is a persistent per-patient draw from the ownership model of the task's signal device (wearable for ECG, smartphone for dermatology). Engagement enters in one of three readings: `tilt` (primary; per-round selection weight among eligible patients), `none` (ownership only) and `consent` (a patient is eligible only if a single uniform draw falls below the product of the ownership and engagement probabilities; persistent).
+Eligibility is a persistent per-patient draw from the device-use model of the task's signal device (wearable for ECG, smartphone for dermatology). Engagement enters in one of three readings: `tilt` (primary; per-round selection weight among eligible patients), `none` (device use only) and `consent` (a patient is eligible only if a single uniform draw falls below the product of the device-use and engagement probabilities; persistent).
 
 Implied composition on PTB-XL ages (21,799 records; 65+ share 43.5%, 75+ share 21.1%; mean of 200 seeded draws):
 
@@ -45,4 +45,4 @@ Implied composition on PTB-XL ages (21,799 records; 65+ share 43.5%, 75+ share 2
 
 ## Scope
 
-The transfer from a US general-population survey of ownership and past-year data sharing to a field-participation propensity is an assumption; the three engagement readings and the two coefficient bounds are the sensitivity analyses. Engagement is past-year sharing of health-device data with a clinician (`SharedHealthDeviceInfo2`), not willingness to contribute to model training, so its absolute level (17% to 36%) is not a consent probability.
+The transfer from a US general-population survey of device use and past-year data sharing to a field-participation propensity is an assumption; the three engagement readings and the two coefficient bounds are the sensitivity analyses. Engagement is past-year sharing of health-device data with a clinician (`SharedHealthDeviceInfo2`), not willingness to contribute to model training, so its absolute level (17% to 36%) is not a consent probability.

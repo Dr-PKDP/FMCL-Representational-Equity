@@ -1,6 +1,6 @@
 # Eligibility and the carbon cost of representational repair in reuse-centric federated learning
 
-Code, protocol and result tables for the study of device-ownership eligibility in reuse-centric federated learning, with two clinical tasks: conduction disturbance on the electrocardiogram (PTB-XL development; CODE-15% and Chapman-Shaoxing plus Ningbo external) and malignancy on smartphone dermatology images (PAD-UFES-20; Fitzpatrick17k check).
+Code, protocol and result tables for the study of device-use eligibility in reuse-centric federated learning, with two clinical tasks: conduction disturbance on the electrocardiogram (PTB-XL development; CODE-15% and Chapman-Shaoxing plus Ningbo external) and malignancy on smartphone dermatology images (PAD-UFES-20; Fitzpatrick17k check).
 
 ## Layout
 
