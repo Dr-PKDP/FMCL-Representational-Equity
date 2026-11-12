@@ -16,15 +16,15 @@ L = json.load(open(P / "ledger.json"))
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8, "text.color": "black",
                      "axes.labelcolor": "black", "xtick.color": "black", "ytick.color": "black",
                      "axes.edgecolor": "black", "svg.fonttype": "none", "axes.linewidth": 0.6})
-ROWS = [("Pool size", "size_matched", "uniform"),
-        ("Composition", "availability", "size_matched"),
-        ("Eligibility total", "availability", "uniform"),
-        ("Added volume", "recruit_random", "availability"),
-        ("Targeting", "repr_aware", "recruit_random"),
-        ("Repair total", "repr_aware", "availability")]
+ROWS = [("Pool size\n(size-matched \u2212 uniform)", "size_matched", "uniform"),
+        ("Composition\n(availability \u2212 size-matched)", "availability", "size_matched"),
+        ("Total\n(availability \u2212 uniform)", "availability", "uniform"),
+        ("Added volume\n(random recruitment \u2212 availability)", "recruit_random", "availability"),
+        ("Targeting\n(repair \u2212 random recruitment)", "repr_aware", "recruit_random"),
+        ("Recruitment total\n(repair \u2212 availability)", "repr_aware", "availability")]
 PANELS = [("a", "A.primary", "A.volume_control", "age65", "PTB-XL, age 65+"),
           ("b", "A.ext_code15", None, "age65", "CODE-15%, age 65+"),
-          ("c", "A.ext_chapman", None, "age65", "Chapman and Ningbo, age 65+"),
+          ("c", "A.ext_chapman", None, "age65", "Chapman\u2013Ningbo, age 65+"),
           ("d", "B.primary", "B.volume", "age65", "PAD-UFES-20, age 65+")]
 
 
@@ -36,7 +36,7 @@ def get(pre, vpre, a, b, sg):
 
 
 def fig1():
-    fig, axs = plt.subplots(1, 4, figsize=(7.4, 2.7), sharey=True)
+    fig, axs = plt.subplots(1, 4, figsize=(7.4, 3.0), sharey=True)
     for ax, (tag, pre, vpre, sg, title) in zip(axs, PANELS):
         for i, (lab, a, b) in enumerate(ROWS):
             e = get(pre, vpre, a, b, sg)
@@ -48,7 +48,7 @@ def fig1():
         ax.axvline(0, color="black", lw=0.5, ls=":")
         ax.set_title(title, fontsize=7.5)
         ax.set_yticks(range(len(ROWS)))
-        ax.set_yticklabels([r[0] for r in ROWS][::-1])
+        ax.set_yticklabels([r[0] for r in ROWS][::-1], fontsize=7)
         ax.set_xlabel("Difference (points)")
         ax.tick_params(length=2)
         for s in ("top", "right"):
