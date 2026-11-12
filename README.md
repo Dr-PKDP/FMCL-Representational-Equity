@@ -1,4 +1,4 @@
-# Eligibility and the carbon cost of representational repair in reuse-centric federated learning
+# Eligibility and the participation-equivalent cost of representational repair in reuse-centric federated learning
 
 Code, protocol and result tables for the study of device-use eligibility in reuse-centric federated learning, with two clinical tasks: conduction disturbance on the electrocardiogram (PTB-XL development; CODE-15% and Chapman-Shaoxing plus Ningbo external) and malignancy on smartphone dermatology images (PAD-UFES-20; Fitzpatrick17k check).
 
@@ -13,7 +13,7 @@ Code, protocol and result tables for the study of device-use eligibility in reus
 | `modelling/` | compact networks, training jobs for Task A and Task B, evaluation metrics |
 | `experiments/` | job suites and workers (`run.py`, `run_derm.py`), worker launcher, tuning (`tune.py`, `tune_derm.py`, and `tune_independent.py` with `indep_confirm.py` for the hyperparameter selection restricted to folds 1 to 6) |
 | `analysis/` | pooled out-of-fold analysis (optionally restricted to test folds), one-threshold age-disparity analysis, external scoring, decision curves, Fitzpatrick17k check, variance components |
-| `carbon/` | recruitment statistics and remediation efficiency |
+| `carbon/` | recruitment statistics and the cost per recovered point (η) |
 | `reporting/` | collection of every reported number from `results/` into a ledger; figure scripts and SVG figures |
 | `results/` | analysis output tables (CSV, JSON) |
 | `tests/` | unit tests (no data required) |

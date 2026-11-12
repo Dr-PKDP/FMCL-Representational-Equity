@@ -7,7 +7,7 @@ seed_patient_bootstrap.py: intervals that add training-seed variation to the pat
 The intervals of ecg_analysis.py resample patients and keep the seeds fixed, so they are conditional on the trained models.
 Here every replicate draws the same patient resample as ecg_analysis.py (same generator seed) and, in addition, a resample of
 the seeds with replacement (shared by the two arms of a contrast, which are paired by seed). The contrast replicate is the
-mean over the resampled seeds of the per-seed paired difference. With --recruit-jobs, remediation efficiency
+mean over the resampled seeds of the per-seed paired difference. With --recruit-jobs, the cost per recovered point
 eta = (kappa - 1) R_a / d is also bootstrapped jointly: R_a of a replicate is the mean of the per-seed recruited
 participations (mean over the ten fold jobs of that seed) over the same resampled seeds, so the interval also carries the
 seed-to-seed variation of R_a. The uncertainty of the HINTS coefficients is not resampled.
